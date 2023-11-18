@@ -12,6 +12,8 @@ on:
 jobs:
     auto_approver:
         runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
         steps:
             - name: Set up Git Repo.
               uses: actions/checkout@v2
@@ -25,16 +27,15 @@ jobs:
                   jq -r '.name' \
                 )
                 updates=(\
-                  `git diff --name-only origin/${{ github.base_ref }} origin/${{github.ref}} -- . | \
+                  `git diff --name-only origin/${{ github.base_ref }} origin/${{github.head_ref}} -- . | \
                   sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
                 )
                 for dir in ${updates[@]};
                   do
                     echo "search in $dir"
                     name_list=$( \
-                      git log --pretty=short -s $dir | \
+                      git log --pretty=short -s $dir | awk -F'\t' '{print $2}' \
                     )
-                    git shortlog -s $dir
                     echo "authors: $name_list"
                     if echo $name_list | grep -qx "$pr_thrower"; then
                       :
