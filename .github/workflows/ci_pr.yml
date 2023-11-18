@@ -28,7 +28,7 @@ jobs:
               id: check_author
               run: |
                 check_status=0
-                pr_thrower=${{github.event.pull_request.user.name}}
+                pr_thrower=${{github.event.pull_request.user.login}}
                 updates=${{steps.make_updated_dirs_array.outputs.update_list}}
                 for dir in updates[@]
                   do
@@ -41,7 +41,7 @@ jobs:
                       check_status=1
                     fi
                   done
-                  echo "::set-output name=check_status::$check_status"
+                echo "::set-output name=check_status::$check_status"
             - name: Auto Approve
-              if: ${{steps.check_author.outputs.check_status == '0'}}
+              if: ${{steps.check_author.outputs.check_status == 0}}
               uses: hmarr/auto-approve-action@v3
