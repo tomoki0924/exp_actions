@@ -1,8 +1,13 @@
 
 name: Pull Request Auto Reviwer
 
-on: pull_request
-
+on:
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - synchronize
+            - ready_for_review
 
 jobs:
     auto_approver:
@@ -10,11 +15,6 @@ jobs:
         steps:
             - name: Set up Git Repo.
               uses: actions/checkout@v2
-            - name: Collect dir_names under the root dir.
-              id: make_dirs_array
-              run: |
-                dir_list=( `find . -maxdepth 1 -type d | grep -xv '.' | sed -e 's/\.\///' | tr "\n" " "` )
-                echo "::set-output name=dir_list::$dir_list"
             - run: git fetch origin ${{ github.base_ref }} --depth=1
             - name: Collect updated dir_names 
               id: make_updated_dirs_array
@@ -23,28 +23,25 @@ jobs:
                   `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
                   sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
                 )
-                update_dirs=(\
-                  `printf '%s\n' $update_list ${{ steps.make_dirs_array.outputs.dir_list }} | \
-                  | sort | uniq | tr "\n" " "` \
-                )
-                echo "::set-output name=update_dirs_list::$update_dirs"
+                echo "::set-output name=update_list::$update_list"
             - name: Check authors name
               id: check_author
               run: |
                 check_status=0
                 pr_thrower=${{github.event.pull_request.user.name}}
-                update_dirs=${{steps.make_updated_dirs_array.outputs.update_dirs_list}}
-                for dir in update_dirs[@]
+                updates=${{steps.make_updated_dirs_array.outputs.update_list}}
+                for dir in updates[@]
                   do
                     name_list=$( \
                       git shortlog -s $dir | awk -F'\t' '{print $2}' \
                     )
-                    if printf '%s\n $name_list | grep -qx $pr_thrower; then
+                    if printf '%s\n' $name_list | grep -qx $pr_thrower; then
                       :
                     else
-                      $check_status=1
+                      check_status=1
                     fi
                   done
-                
-                
-
+                  echo "::set-output name=check_status::$check_status"
+            - name: Auto Approve
+              if: ${{steps.check_author.outputs.check_status == '0'}}
+              uses: hmarr/auto-approve-action@v3
