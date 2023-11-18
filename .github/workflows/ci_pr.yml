@@ -28,7 +28,7 @@ jobs:
                   `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
                   sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
                 )
-                for dir in ${updates[@]}
+                for dir in ${updates[@]};
                   do
                     echo "search in $dir"
                     name_list=$( \
