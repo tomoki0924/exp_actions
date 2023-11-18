@@ -33,7 +33,7 @@ jobs:
                   jq -r '.name' \
                 )
                 updates=${{steps.make_updated_dirs_array.outputs.update_list}}
-                for dir in updates[@]
+                for dir in $updates[@]
                   do
                     echo "search in $dir"
                     name_list=$( \
