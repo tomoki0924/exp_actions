@@ -34,7 +34,7 @@ jobs:
                   do
                     echo "search in $dir"
                     name_list=$( \
-                      git shortlog -s $dir | awk -F'\t' '{print $2}' \
+                      git shortlog -s -- $dir | awk -F'\t' '{print $2}' \
                     )
                     echo "authors: $name_list"
                     if echo $name_list | grep -qx "$pr_thrower"; then
