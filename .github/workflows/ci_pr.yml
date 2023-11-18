@@ -38,7 +38,7 @@ jobs:
                     name_list=$( \
                       git shortlog -s $dir | awk -F'\t' '{print $2}' \
                     )
-                    if printf '%s\n' $name_list | grep -qx $pr_thrower; then
+                    if printf '%s\n' $name_list | grep -qx "$pr_thrower"; then
                       :
                     else
                       check_status=1
