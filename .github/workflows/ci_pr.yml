@@ -16,14 +16,6 @@ jobs:
             - name: Set up Git Repo.
               uses: actions/checkout@v2
             - run: git fetch origin ${{ github.base_ref }} --depth=1
-            - name: Collect updated dir_names 
-              id: make_updated_dirs_array
-              run: |
-                update_list=(\
-                  `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
-                  sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
-                )
-                echo "::set-output name=update_list::$update_list"
             - name: Check authors name
               id: check_author
               run: |
@@ -32,8 +24,11 @@ jobs:
                   curl https://api.github.com/users/${{github.event.pull_request.user.login}} | \
                   jq -r '.name' \
                 )
-                updates=${{steps.make_updated_dirs_array.outputs.update_list}}
-                for dir in $updates[@]
+                updates=(\
+                  `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
+                  sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
+                )
+                for dir in ${updates[@]}
                   do
                     echo "search in $dir"
                     name_list=$( \
