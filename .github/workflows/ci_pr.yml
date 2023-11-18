@@ -28,10 +28,10 @@ jobs:
               id: check_author
               run: |
                 check_status=0
-                pr_thrower="$(\
+                pr_thrower=$(\
                   curl https://api.github.com/users/${{github.event.pull_request.user.login}} | \
-                  jq '.name' \
-                )"
+                  jq -r '.name' \
+                )
                 updates=${{steps.make_updated_dirs_array.outputs.update_list}}
                 for dir in updates[@]
                   do
