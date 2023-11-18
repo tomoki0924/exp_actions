@@ -25,14 +25,14 @@ jobs:
                   jq -r '.name' \
                 )
                 updates=(\
-                  `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
+                  `git diff --name-only origin/${{ github.base_ref }} origin/${{github.ref}} -- . | \
                   sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
                 )
                 for dir in ${updates[@]};
                   do
                     echo "search in $dir"
                     name_list=$( \
-                      git shortlog -s $dir \
+                      git log --pretty=short -s $dir | \
                     )
                     git shortlog -s $dir
                     echo "authors: $name_list"
