@@ -12,36 +12,42 @@ on:
 jobs:
     auto_approver:
         runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
         steps:
             - name: Set up Git Repo.
               uses: actions/checkout@v2
-            - run: git fetch origin ${{ github.base_ref }} --depth=1
-            - name: Collect updated dir_names 
-              id: make_updated_dirs_array
-              run: |
-                update_list=(\
-                  `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
-                  sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
-                )
-                echo "::set-output name=update_list::$update_list"
+            - run: git fetch origin
             - name: Check authors name
               id: check_author
               run: |
                 check_status=0
-                pr_thrower=${{github.event.pull_request.user.name}}
-                updates=${{steps.make_updated_dirs_array.outputs.update_list}}
-                for dir in updates[@]
+                pr_thrower=$(\
+                  curl https://api.github.com/users/${{github.event.pull_request.user.login}} | \
+                  jq -r '.name' \
+                )
+                updates=(\
+                  `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
+                  sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
+                )
+                for dir in ${updates[@]};
                   do
+                    echo "search in $dir"
                     name_list=$( \
-                      git shortlog -s $dir | awk -F'\t' '{print $2}' \
+                      git log | git shortlog -s -- $dir | awk -F'\t' '{print $2}' \
                     )
-                    if printf '%s\n' $name_list | grep -qx $pr_thrower; then
+                    echo "authors: $name_list"
+                    if echo $name_list | grep -qx "$pr_thrower"; then
                       :
                     else
                       check_status=1
+                      echo "This request must be reviewed."
+                      echo "Please request review to $name_list."
                     fi
                   done
-                  echo "::set-output name=check_status::$check_status"
+                echo "::set-output name=check_status::$check_status"
             - name: Auto Approve
-              if: ${{steps.check_author.outputs.check_status == '0'}}
+              if: |
+                ${{steps.check_author.outputs.check_status == '0'}}
+                && ! github.event.pull_request.draft
               uses: hmarr/auto-approve-action@v3
