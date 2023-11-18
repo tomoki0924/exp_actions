@@ -17,7 +17,7 @@ jobs:
         steps:
             - name: Set up Git Repo.
               uses: actions/checkout@v2
-            - run: git fetch origin ${{ github.base_ref }} --depth=1
+            - run: git fetch origin
             - name: Check authors name
               id: check_author
               run: |
