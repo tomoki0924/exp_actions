@@ -51,5 +51,3 @@ jobs:
                 ${{steps.check_author.outputs.check_status == '0'}}
                 && ! github.event.pull_request.draft
               uses: hmarr/auto-approve-action@v3
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
