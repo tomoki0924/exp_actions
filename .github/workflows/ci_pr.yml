@@ -30,7 +30,7 @@ jobs:
                   `git diff --name-only origin/${{ github.base_ref }} HEAD -- . | \
                   sed -e 's/\/.*//' | sort | uniq | tr "\n" " "` \
                 )
-                git checkout -b origin/${{ github.base_ref }}
+                git checkout origin/${{ github.base_ref }}
                 tops=(`ls -a`)    
                 for dir in ${updates[@]};
                   do
