@@ -37,7 +37,7 @@ jobs:
                     if printf '%s\n' "${tops[@]}" | grep -qx "$dir"; then
                       echo "search in $dir"
                       name_list=$( \
-                        git log | git shortlog origin/${{ github.base_ref }} -s -- $dir | awk -F'\t' '{print $2}' \
+                        git log | git shortlog -s -- $dir | awk -F'\t' '{print $2}' \
                       )
                       echo "authors: $name_list"
                       if echo $name_list | grep -qx "$pr_thrower"; then
