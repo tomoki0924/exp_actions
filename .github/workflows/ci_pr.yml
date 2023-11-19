@@ -49,6 +49,6 @@ jobs:
                 echo "::set-output name=check_status::$check_status"
             - name: Auto Approve
               if: |
-                ${{steps.check_author.outputs.check_status == '0'}}
+                ${{steps.check_author.outputs.check_status}} == '0'
                 && ! github.event.pull_request.draft
               uses: hmarr/auto-approve-action@v3
